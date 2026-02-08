@@ -4,11 +4,11 @@
 
 ### AI-Powered Log Analysis • 70% Cost Savings • 13 Threat Patterns
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/Abin-Shaiji-Thomas/Security-Monitoring-Agent)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/athiraarun06/Security-Monitoring-Agent)
 [![Python](https://img.shields.io/badge/python-3.8+-green)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-009688)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
-[![Status](https://img.shields.io/badge/status-production--ready-success)](https://github.com/Abin-Shaiji-Thomas/Security-Monitoring-Agent)
+[![Status](https://img.shields.io/badge/status-production--ready-success)](https://github.com/athriaarun06/Security-Monitoring-Agent)
 
 **Compress logs by 50-80% → Detect threats in real-time → Save on AI costs**
 
@@ -121,7 +121,7 @@ Savings: 70% cost reduction ✅
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Abin-Shaiji-Thomas/Security-Monitoring-Agent.git
+git clone https://github.com/athiraarun06/Security-Monitoring-Agent.git
 cd Security-Monitoring-Agent
 
 # 2. Create virtual environment
@@ -558,7 +558,7 @@ Built with amazing open-source tools:
 - **API Documentation**: http://127.0.0.1:8001/docs
 
 ### Issues
-Found a bug? [Open an issue](https://github.com/Abin-Shaiji-Thomas/Security-Monitoring-Agent/issues)
+Found a bug? [Open an issue](https://github.com/athiraarun06/Security-Monitoring-Agent/issues)
 
 ### Questions
 Have questions? Check the [API docs](http://127.0.0.1:8001/docs) first, then open an issue.
@@ -571,7 +571,7 @@ Have questions? Check the [API docs](http://127.0.0.1:8001/docs) first, then ope
 
 ⭐ **Star this repo** if you find it useful!
 
-[Report Bug](https://github.com/Abin-Shaiji-Thomas/Security-Monitoring-Agent/issues) • [Request Feature](https://github.com/Abin-Shaiji-Thomas/Security-Monitoring-Agent/issues) • [View Demo](http://127.0.0.1:8001)
+[Report Bug](https://github.com/athiraarun06/Security-Monitoring-Agent/issues) • [Request Feature](https://github.com/athiraarun06/Security-Monitoring-Agent/issues) • [View Demo](http://127.0.0.1:8001)
 
 **Version 2.0.0** | **Production Ready** | **Open Source**
 
