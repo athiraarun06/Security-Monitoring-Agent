@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Monitoring Agent v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .options-section {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-option label {
+            font-size: 0.95em;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-analyze {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-analyze:active {
+            transform: translateY(0);
+        }
+        
+        .btn-sample {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-sample:hover {
+            background: #e0e0e0;
+        }
+        
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        #loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        #results {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        #results.active {
+            display: block;
+        }
+        
+        #error {
+            display: none;
+            padding: 20px;
+            background: #fee;
+            color: #c00;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        #error.active {
+            display: block;
+        }
+        
+        /* NEW: Security Health Score */
+        .health-score-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .health-score-value {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .health-status {
+            font-size: 1.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .health-status.critical { color: #ff6b6b; }
+        .health-status.poor { color: #ffa500; }
+        .health-status.fair { color: #ffd700; }
+        .health-status.good { color: #90ee90; }
+        .health-status.excellent { color: #00ff00; }
+        
+        .risk-distribution {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .risk-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+            font-weight: 600;
+        }
+        
+        /* Executive Summary */
+        .executive-summary {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .executive-summary h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .executive-summary p {
+            line-height: 1.8;
+            color: #555;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2a5298;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #555;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .threat-card {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #ccc;
+            transition: all 0.3s;
+        }
+        
+        .threat-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+        
+        .threat-card.critical {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+        
+        .threat-card.high {
+            border-left-color: #ff9800;
+            background: #fff8f0;
+        }
+        
+        .threat-card.medium {
+            border-left-color: #ffc107;
+            background: #fffef0;
+        }
+        
+        .threat-card.low {
+            border-left-color: #4caf50;
+            background: #f0fff4;
+        }
+        
+        .threat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .threat-type {
+            font-weight: 600;
+            font-size: 1.3em;
+            color: #333;
+        }
+        
+        .threat-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .severity-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .severity-badge.critical { background: #e74c3c; }
+        .severity-badge.high { background: #ff9800; }
+        .severity-badge.medium { background: #ffc107; color: #333; }
+        .severity-badge.low { background: #4caf50; }
+        
+        .risk-score-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 700;
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .threat-meta {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #666;
+            flex-wrap: wrap;
+        }
+        
+        .threat-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .threat-description {
+            color: #555;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        .threat-recommendation {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .threat-recommendation strong {
+            color: #667eea;
+        }
+        
+        /* IP Intelligence Section */
+        .ip-section {
+            background: #fff9f0;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px solid #ffd700;
+        }
+        
+        .ip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .ip-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .ip-address {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 8px;
+        }
+        
+        .ip-details {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Security Monitoring Agent v2.0</h1>
+            <p>AI-Powered Threat Detection with Risk Scoring & Intelligence</p>
+        </header>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="logs">Security Logs</label>
+                <textarea id="logs" placeholder="Paste your security logs here..."></textarea>
+                
+                <div class="options-section">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="generatePdf" name="generatePdf">
+                        <label for="generatePdf">Generate PDF Report</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="learnPatterns" name="learnPatterns">
+                        <label for="learnPatterns">Enable Pattern Learning</label>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-analyze" onclick="analyzeLogs()">Analyze Logs</button>
+                    <select id="sampleSelector" onchange="loadSelectedSample()" style="flex: 1; padding: 15px; font-size: 1.05em; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer;">
+                        <option value="">-- Select Sample Dataset --</option>
+                        <option value="1">Sample 1: Brute Force Attack</option>
+                        <option value="2">Sample 2: SQL Injection</option>
+                        <option value="3">Sample 3: Ransomware</option>
+                        <option value="4">Sample 4: Insider Threat</option>
+                        <option value="5">Sample 5: DDoS Attack</option>
+                        <option value="6">Sample 6: Privilege Escalation</option>
+                        <option value="7">Sample 7: C2 Communication</option>
+                        <option value="8">Sample 8: Phishing</option>
+                        <option value="9">Sample 9: Cryptomining</option>
+                        <option value="10">Sample 10: Zero-Day APT</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing security logs with AI...</p>
+            </div>
+            
+            <div id="error"></div>
+            
+            <div id="results">
+                <!-- Security Health Score -->
+                <div class="health-score-section">
+                    <div class="health-status" id="healthStatus">EXCELLENT</div>
+                    <div class="health-score-value" id="healthScore">95.0</div>
+                    <p style="font-size: 1.2em;">Overall Security Score</p>
+                    <div class="risk-distribution" id="riskDistribution"></div>
+                </div>
+                
+                <!-- Executive Summary -->
+                <div class="executive-summary" id="executiveSummary" style="display:none;">
+                    <h3>Executive Summary</h3>
+                    <p id="summaryText"></p>
+                </div>
+                
+                <!-- Compression Stats -->
+                <h2 class="section-title">Cost Savings</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Original Tokens</div>
+                        <div class="stat-value" id="originalTokens">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Compressed Tokens</div>
+                        <div class="stat-value" id="compressedTokens">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tokens Saved</div>
+                        <div class="stat-value" id="tokensSaved">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Percentage Saved</div>
+                        <div class="stat-value" id="percentageSaved">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Cost Saved (per 1K)</div>
+                        <div class="stat-value" id="costSaved">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Processing Time</div>
+                        <div class="stat-value" id="latency">-</div>
+                    </div>
+                </div>
+                
+                <!-- IP Intelligence -->
+                <div class="ip-section" id="ipSection" style="display:none;">
+                    <h3>IP Threat Intelligence</h3>
+                    <p><strong id="ipSummary"></strong></p>
+                    <div class="ip-grid" id="ipGrid"></div>
+                </div>
+                
+                <!-- Threats -->
+                <h2 class="section-title">Detected Threats</h2>
+                <div id="threats"></div>
+                
+                <!-- PDF Link -->
+                <div id="pdfLink" style="display:none; margin-top: 30px; padding: 20px; background: #e8f5e9; border-radius: 8px; text-align: center;">
+                    <p style="font-size: 1.2em; color: #2e7d32; font-weight: 600; margin-bottom: 15px;">
+                        PDF Report Generated Successfully!
+                    </p>
+                    <button onclick="downloadPDF()" style="padding: 12px 30px; background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        Download PDF Report
+                    </button>
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #555;">
+                        File: <span id="pdfPath"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentPdfFilename = null;
+        
+        const sampleDatasets = {
+            1: `2026-02-01T09:15:22Z INFO User alice logged in from 192.168.1.50
+2026-02-01T09:18:33Z WARNING Failed login attempt for user root from 45.142.212.88
+2026-02-01T09:18:35Z WARNING Failed login attempt for user admin from 45.142.212.88
+2026-02-01T09:18:37Z WARNING Failed login attempt for user administrator from 45.142.212.88
+2026-02-01T09:18:39Z WARNING Failed login attempt for user test from 45.142.212.88
+2026-02-01T09:18:41Z WARNING Failed login attempt for user guest from 45.142.212.88
+2026-02-01T09:18:43Z CRITICAL Account lockout triggered for user admin - multiple failed attempts
+2026-02-01T09:18:45Z WARNING Failed login attempt for user user from 45.142.212.88
+2026-02-01T09:18:47Z WARNING Failed login attempt for user webadmin from 45.142.212.88
+2026-02-01T09:20:00Z INFO System alert: SSH brute force attack detected from 45.142.212.88`,
+
+            2: `2026-02-01T11:30:15Z INFO User bob accessed /products page from 203.0.113.45
+2026-02-01T11:30:45Z ERROR HTTP Request: GET /api/users?id=1' OR '1'='1 from 203.0.113.45
+2026-02-01T11:30:47Z ERROR HTTP Request: GET /search?q=test'; DROP TABLE users;-- from 203.0.113.45
+2026-02-01T11:30:50Z CRITICAL Database error: SQL syntax error in query execution
+2026-02-01T11:30:52Z ERROR HTTP Request: POST /login username=admin' AND 1=1-- from 203.0.113.45
+2026-02-01T11:31:00Z ALERT Web Application Firewall blocked request from 203.0.113.45
+2026-02-01T11:31:05Z ERROR HTTP Request: GET /api/orders?id=5 UNION SELECT password FROM users-- from 203.0.113.45
+2026-02-01T11:31:10Z CRITICAL Multiple SQL injection attempts detected from 203.0.113.45
+2026-02-01T11:31:15Z INFO IP 203.0.113.45 has been blacklisted`,
+
+            3: `2026-02-01T14:00:00Z INFO User charlie working on document reports.docx
+2026-02-01T14:22:30Z WARNING Suspicious process: crypto_locker.exe started in C:\\Users\\charlie\\Downloads
+2026-02-01T14:22:35Z CRITICAL Mass file encryption detected: 150 files modified in 30 seconds
+2026-02-01T14:22:40Z ALERT File extension changed: report.docx to report.docx.locked
+2026-02-01T14:22:42Z ALERT File extension changed: budget.xlsx to budget.xlsx.locked
+2026-02-01T14:22:45Z CRITICAL Ransomware behavior: Wallpaper changed to ransom note
+2026-02-01T14:22:50Z ERROR Unauthorized encryption key generated
+2026-02-01T14:23:00Z CRITICAL Outbound connection: 2.5GB data transfer to 185.220.101.45:443
+2026-02-01T14:23:10Z ALERT File created: README_DECRYPT.txt with ransom instructions
+2026-02-01T14:23:15Z CRITICAL System backup files deleted in C:\\Backups`,
+
+            4: `2026-02-01T16:45:00Z INFO User david_contractor logged in from 192.168.1.105
+2026-02-01T16:45:30Z WARNING User david_contractor accessed HR database outside normal hours
+2026-02-01T16:46:00Z ALERT Large data export: 5000 employee records downloaded by david_contractor
+2026-02-01T16:46:30Z WARNING USB device connected to workstation DESK-105
+2026-02-01T16:47:00Z CRITICAL File transfer: 2.3GB copied to external drive E:\\
+2026-02-01T16:47:30Z WARNING User david_contractor accessed financial reports directory
+2026-02-01T16:48:00Z ERROR Attempted access to source code repository outside authorization
+2026-02-01T16:48:30Z ALERT User david_contractor downloaded customer database backup
+2026-02-01T16:49:00Z CRITICAL Data Loss Prevention alert: Sensitive data transfer detected
+2026-02-01T16:49:30Z WARNING User david_contractor cleared browser history and logs`,
+
+            5: `2026-02-01T18:00:00Z INFO Web server receiving normal traffic - 50 req/sec
+2026-02-01T18:05:15Z WARNING Traffic spike detected - 500 req/sec from multiple IPs
+2026-02-01T18:05:20Z CRITICAL DDoS attack detected: 15,000 requests from 89.248.163.55
+2026-02-01T18:05:22Z CRITICAL DDoS attack detected: 12,000 requests from 45.142.212.200
+2026-02-01T18:05:25Z CRITICAL DDoS attack detected: 18,000 requests from 185.220.101.88
+2026-02-01T18:05:30Z ERROR Server CPU usage 98% - resource exhaustion
+2026-02-01T18:05:35Z ERROR Server memory usage 95% - potential crash imminent
+2026-02-01T18:05:40Z CRITICAL Network bandwidth saturated: 10 Gbps inbound traffic
+2026-02-01T18:05:45Z ALERT Load balancer failover triggered
+2026-02-01T18:05:50Z WARNING Connection pool exhausted - dropping incoming connections
+2026-02-01T18:06:00Z CRITICAL Service downtime: Web application unresponsive`,
+
+            6: `2026-02-01T20:10:00Z INFO User emma logged in with standard privileges
+2026-02-01T20:10:30Z WARNING User emma attempted sudo command without authorization
+2026-02-01T20:10:45Z ERROR Privilege escalation attempt: sudo su - root by user emma
+2026-02-01T20:11:00Z CRITICAL Suspicious PowerShell execution: Invoke-Mimikatz.ps1
+2026-02-01T20:11:15Z ALERT Process injection detected: lsass.exe memory access by unauthorized process
+2026-02-01T20:11:30Z ERROR Registry modification: SAM hive access attempted
+2026-02-01T20:11:45Z CRITICAL Credential dumping detected: Password hashes extracted
+2026-02-01T20:12:00Z WARNING New user account created: temp_admin with admin privileges
+2026-02-01T20:12:15Z ALERT Group policy modification: User added to Domain Admins group
+2026-02-01T20:12:30Z CRITICAL Security event log cleared by user emma`,
+
+            7: `2026-02-01T22:00:00Z INFO Network traffic monitoring active
+2026-02-01T22:15:30Z WARNING Outbound connection to unknown domain: evil-c2-server.onion
+2026-02-01T22:15:35Z ALERT Beacon detected: Periodic 60-second connections to 198.51.100.200:8080
+2026-02-01T22:16:30Z CRITICAL Encrypted traffic to known malicious IP 198.51.100.200
+2026-02-01T22:17:00Z WARNING DNS tunneling suspected: Excessive DNS queries to suspicious domain
+2026-02-01T22:17:30Z ERROR Malicious payload download: trojan.dll from 198.51.100.200
+2026-02-01T22:18:00Z ALERT Process spawned: backdoor.exe establishing persistent connection
+2026-02-01T22:18:30Z CRITICAL Remote code execution: Commands received from C2 server
+2026-02-01T22:19:00Z WARNING Data exfiltration: 500MB uploaded to 198.51.100.200:443
+2026-02-01T22:19:30Z ALERT Scheduled task created: Persistence mechanism for backdoor`,
+
+            8: `2026-02-01T23:30:00Z INFO Email server processing incoming messages
+2026-02-01T23:30:15Z WARNING Suspicious email received: Sender spoofing detected (CEO impersonation)
+2026-02-01T23:30:20Z ALERT Email contains malicious link: hxxps://paypa1-login[.]com/verify
+2026-02-01T23:30:25Z ERROR User frank clicked phishing link from email
+2026-02-01T23:30:30Z CRITICAL Credentials submitted to fake login page at 203.0.113.150
+2026-02-01T23:30:35Z WARNING Password reuse detected: frank's password used on external site
+2026-02-01T23:30:40Z ALERT Unauthorized login attempt using frank's credentials from 203.0.113.150
+2026-02-01T23:30:45Z ERROR Session hijacking: Cookie stolen from frank's browser
+2026-02-01T23:30:50Z CRITICAL Account compromise: frank's account accessed from China
+2026-02-01T23:31:00Z WARNING Multi-factor authentication bypass attempt detected`,
+
+            9: `2026-02-02T01:00:00Z INFO Server performance within normal parameters
+2026-02-02T01:15:30Z WARNING CPU usage spike: 85% utilization by unknown process
+2026-02-02T01:15:35Z ALERT Suspicious process detected: xmrig64.exe running on server
+2026-02-02T01:15:40Z ERROR Unauthorized cryptocurrency mining software installed
+2026-02-02T01:15:45Z CRITICAL Outbound connection to mining pool: pool.minexmr.com:443
+2026-02-02T01:16:00Z WARNING GPU temperature elevated: 85°C sustained
+2026-02-02T01:16:15Z ALERT Network traffic: Continuous stratum protocol communication
+2026-02-02T01:16:30Z ERROR Power consumption increased 40% above baseline
+2026-02-02T01:16:45Z CRITICAL Process persistence: Mining software added to system startup
+2026-02-02T01:17:00Z WARNING Wallet address detected in process memory: 4AdUndXHHZ6cfufTMvppY6JwXNouMBzSkbLYfpAV469aEDQVQPi9QPkj`,
+
+            10: `2026-02-02T03:00:00Z INFO Security monitoring active on critical infrastructure
+2026-02-02T03:22:15Z WARNING Unknown vulnerability exploitation attempt on web server
+2026-02-02T03:22:20Z CRITICAL Zero-day exploit detected: CVE-2026-XXXX targeting Apache Struts
+2026-02-02T03:22:25Z ALERT Remote code execution: Webshell uploaded to /uploads/shell.jsp
+2026-02-02T03:22:30Z ERROR Lateral movement: SMB connections to 15 internal hosts
+2026-02-02T03:22:35Z CRITICAL Advanced Persistent Threat indicators: Nation-state malware signatures
+2026-02-02T03:22:40Z WARNING Memory-only malware: Fileless attack detected in RAM
+2026-02-02T03:22:45Z ALERT Credential harvesting: Kerberoasting attack on domain controller
+2026-02-02T03:22:50Z CRITICAL Data staging: 50GB compressed archive in temp directory
+2026-02-02T03:23:00Z ERROR Encrypted exfiltration: TLS 1.3 tunnel to 185.220.101.33:443
+2026-02-02T03:23:10Z ALERT Anti-forensics: Event logs and security audit trails deleted
+2026-02-02T03:23:20Z CRITICAL Multiple persistence mechanisms: Registry keys, scheduled tasks, WMI subscriptions`
+        };
+        
+        function downloadPDF() {
+            if (currentPdfFilename) {
+                window.open(`/download/report/${currentPdfFilename}`, '_blank');
+            }
+        }
+        
+        function loadSelectedSample() {
+            const selector = document.getElementById('sampleSelector');
+            const sampleId = parseInt(selector.value);
+            if (sampleId && sampleDatasets[sampleId]) {
+                document.getElementById('logs').value = sampleDatasets[sampleId];
+                // Don't reset - keep selection visible
+            }
+        }
+        
+        // Reset dropdown when user manually types in textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            const logsTextarea = document.getElementById('logs');
+            const selector = document.getElementById('sampleSelector');
+            let lastLoadedSample = '';
+            
+            logsTextarea.addEventListener('input', function() {
+                // Only reset if user is typing (not when we programmatically set the value)
+                if (this.value !== lastLoadedSample) {
+                    selector.value = '';
+                }
+            });
+            
+            // Track when we load from dropdown
+            const originalLoadFunction = loadSelectedSample;
+            window.loadSelectedSample = function() {
+                originalLoadFunction();
+                lastLoadedSample = logsTextarea.value;
+            };
+        });
+        
+        function loadSample() {
+            const sampleLogs = `2026-02-01T14:23:15Z INFO User admin logged in from 192.168.1.100
+2026-02-01T14:23:45Z WARNING Failed login attempt for user root from 203.0.113.50
+2026-02-01T14:23:47Z WARNING Failed login attempt for user root from 203.0.113.50
+2026-02-01T14:23:49Z WARNING Failed login attempt for user admin from 203.0.113.50
+2026-02-01T14:23:51Z WARNING Failed login attempt for user administrator from 203.0.113.50
+2026-02-01T14:23:53Z WARNING Failed login attempt for user user from 203.0.113.50
+2026-02-01T14:24:10Z ERROR HTTP Request: GET /api/users?id=1' OR '1'='1 from 45.142.212.33
+2026-02-01T14:24:35Z INFO Database query executed: SELECT * FROM products WHERE category='electronics'
+2026-02-01T14:25:00Z CRITICAL Outbound connection detected: 5.2GB transferred to 198.51.100.75:443
+2026-02-01T14:25:15Z WARNING Unusual port activity: Connection to port 4444 from internal host 10.0.5.22
+2026-02-01T14:25:30Z ERROR User jsmith attempted to execute sudo command without authorization
+2026-02-01T14:25:45Z ALERT Malicious file detected: trojan.exe in C:\\Users\\Public\\Downloads
+2026-02-01T14:26:00Z WARNING Access denied: User guest attempted to access /admin/config
+2026-02-01T14:26:15Z INFO System backup completed successfully
+2026-02-01T14:26:30Z ERROR Failed SSH authentication for user backup from 192.168.1.200
+2026-02-01T14:26:45Z WARNING Privilege escalation attempt detected from user temp_contractor
+2026-02-01T14:27:00Z INFO Network traffic: Normal HTTPS communication to api.company.com
+2026-02-01T14:27:15Z CRITICAL Ransomware behavior detected: Multiple file encryptions in progress
+2026-02-01T14:27:30Z ERROR Unauthorized database access attempt from IP 203.0.113.100
+2026-02-01T14:27:45Z WARNING Suspicious PowerShell execution: Invoke-WebRequest to unknown domain`;
+            
+            document.getElementById('logs').value = sampleLogs;
+        }
+        
+        async function analyzeLogs() {
+            const logs = document.getElementById('logs').value.trim();
+            
+            if (!logs) {
+                showError('Please enter security logs to analyze');
+                return;
+            }
+            
+            const generatePdf = document.getElementById('generatePdf').checked;
+            const learnPatterns = document.getElementById('learnPatterns').checked;
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('error').classList.remove('active');
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        logs: logs,
+                        prompt: 'Identify security threats and anomalies',
+                        generate_pdf: generatePdf,
+                        learn_patterns: learnPatterns
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Analysis failed');
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+        
+        function displayResults(data) {
+            // Update Security Health Score
+            if (data.overall_security) {
+                const score = data.overall_security.overall_score;
+                const status = data.overall_security.health_status;
+                
+                document.getElementById('healthScore').textContent = score.toFixed(1);
+                document.getElementById('healthStatus').textContent = status;
+                document.getElementById('healthStatus').className = 'health-status ' + status.toLowerCase();
+                
+                // Risk distribution
+                const riskDist = document.getElementById('riskDistribution');
+                riskDist.innerHTML = '';
+                if (data.overall_security.risk_distribution) {
+                    for (const [level, count] of Object.entries(data.overall_security.risk_distribution)) {
+                        const badge = document.createElement('div');
+                        badge.className = 'risk-badge';
+                        badge.textContent = `${level}: ${count}`;
+                        riskDist.appendChild(badge);
+                    }
+                }
+            }
+            
+            // Executive Summary
+            if (data.executive_summary) {
+                document.getElementById('executiveSummary').style.display = 'block';
+                document.getElementById('summaryText').textContent = data.executive_summary;
+            } else {
+                document.getElementById('executiveSummary').style.display = 'none';
+            }
+            
+            // Update compression stats
+            document.getElementById('originalTokens').textContent = data.compression_stats.original_tokens;
+            document.getElementById('compressedTokens').textContent = data.compression_stats.compressed_tokens;
+            document.getElementById('tokensSaved').textContent = data.cost_savings.tokens_saved;
+            document.getElementById('percentageSaved').textContent = data.cost_savings.percentage_saved.toFixed(1) + '%';
+            document.getElementById('costSaved').textContent = '$' + (data.cost_savings.estimated_cost_saved_usd * 1000).toFixed(4);
+            document.getElementById('latency').textContent = data.cost_savings.latency_ms + 'ms';
+            
+            // IP Intelligence
+            if (data.ip_intelligence && data.ip_intelligence.threat_ips && data.ip_intelligence.threat_ips.length > 0) {
+                document.getElementById('ipSection').style.display = 'block';
+                document.getElementById('ipSummary').textContent = 
+                    `Analyzed ${data.ip_intelligence.total_ips} IPs - Found ${data.ip_intelligence.threat_ips.length} malicious`;
+                
+                const ipGrid = document.getElementById('ipGrid');
+                ipGrid.innerHTML = '';
+                data.ip_intelligence.threat_ips.slice(0, 6).forEach(ip => {
+                    const card = document.createElement('div');
+                    card.className = 'ip-card';
+                    card.innerHTML = `
+                        <div class="ip-address">${ip.ip}</div>
+                        <div class="ip-details">
+                            <div>Location: ${ip.country}</div>
+                            <div>Threat Level: ${ip.threat_level}</div>
+                        </div>
+                    `;
+                    ipGrid.appendChild(card);
+                });
+            } else {
+                document.getElementById('ipSection').style.display = 'none';
+            }
+            
+            // Display threats
+            const threatsDiv = document.getElementById('threats');
+            threatsDiv.innerHTML = '';
+            
+            if (data.threats.length === 0) {
+                threatsDiv.innerHTML = '<div class="success-message">No threats detected - logs appear clean!</div>';
+            } else {
+                data.threats.forEach(threat => {
+                    const card = document.createElement('div');
+                    card.className = `threat-card ${threat.severity.toLowerCase()}`;
+                    
+                    let metaHtml = `<div class="threat-meta">`;
+                    metaHtml += `<div class="threat-meta-item">Confidence: ${(threat.confidence * 100).toFixed(1)}%</div>`;
+                    if (threat.source_ip) {
+                        metaHtml += `<div class="threat-meta-item">IP: ${threat.source_ip}</div>`;
+                    }
+                    if (threat.country) {
+                        metaHtml += `<div class="threat-meta-item">Location: ${threat.country}</div>`;
+                    }
+                    metaHtml += `</div>`;
+                    
+                    card.innerHTML = `
+                        <div class="threat-header">
+                            <div class="threat-type">${threat.type}</div>
+                            <div class="threat-badges">
+                                <div class="severity-badge ${threat.severity.toLowerCase()}">${threat.severity}</div>
+                                ${threat.risk_score ? `<div class="risk-score-badge">Risk: ${threat.risk_score.toFixed(1)}/100</div>` : ''}
+                            </div>
+                        </div>
+                        ${metaHtml}
+                        <div class="threat-description">${threat.description}</div>
+                        <div class="threat-recommendation">
+                            <strong>Recommendation:</strong> ${threat.recommendation}
+                        </div>
+                    `;
+                    
+                    threatsDiv.appendChild(card);
+                });
+            }
+            
+            // PDF Report Link
+            if (data.pdf_report_path) {
+                document.getElementById('pdfLink').style.display = 'block';
+                // Extract just the filename from the path
+                currentPdfFilename = data.pdf_report_path.split('/').pop().split('\\').pop();
+                document.getElementById('pdfPath').textContent = currentPdfFilename;
+            } else {
+                document.getElementById('pdfLink').style.display = 'none';
+                currentPdfFilename = null;
+            }
+            
+            // Show results
+            document.getElementById('results').classList.add('active');
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = 'Error: ' + message;
+            errorDiv.classList.add('active');
+        }
+    </script>
+</body>
+</html>
